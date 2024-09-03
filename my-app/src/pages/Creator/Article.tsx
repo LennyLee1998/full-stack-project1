@@ -1,8 +1,8 @@
 import { deleteArticleApi, getArticlesApi } from '@/services/article';
 import type { TableProps } from 'antd';
 import { Button, Space, Table } from 'antd';
-import React, { useEffect, useState } from 'react';
-
+import React from 'react';
+import { useRequest } from 'umi';
 interface DataType {
   _id: string;
   title: string;
@@ -43,28 +43,36 @@ interface DataType {
 // ];
 
 const Article: React.FC = () => {
-  const [articleData, setArticleData] = useState<DataType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [articleData, setArticleData] = useState<DataType[]>([]);
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const getArticles = async () => {
-    try {
-      setIsLoading(true);
-      const res = await getArticlesApi();
-      console.log(res)
-      setIsLoading(false);
-      setArticleData(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  useEffect(() => {
-    getArticles();
-  }, []);
+  // const getArticles = async () => {
+  // try {
+  // 方法一
+  // setIsLoading(true);
+  // const res = await getArticlesApi();
+  // console.log(res);
+  // setIsLoading(false);
+  // setArticleData(res.data);
+  // } catch (err) {
+  // console.log(err);
+  // }
+  // };
+  // useEffect(() => {
+  // getArticles();
+  // }, []);
+  const {
+    data = [],
+    loading,
+    refresh,
+  } = useRequest(() => {
+    return getArticlesApi();
+  });
+  // console.log(data)
   const handleDeleteClick = async (articleId: string) => {
     try {
       await deleteArticleApi(articleId);
-      await getArticles();
+      refresh();
     } catch (error) {
       console.log(error);
     }
@@ -112,7 +120,7 @@ const Article: React.FC = () => {
           </Button>
           <Button
             onClick={() => {
-              handleDeleteClick(record._id)
+              handleDeleteClick(record._id);
             }}
           >
             Delete
@@ -122,12 +130,7 @@ const Article: React.FC = () => {
     },
   ];
   return (
-    <Table
-      columns={columns}
-      dataSource={articleData}
-      rowKey="_id"
-      loading={isLoading}
-    />
+    <Table columns={columns} dataSource={data} rowKey="_id" loading={loading} />
   );
 };
 
